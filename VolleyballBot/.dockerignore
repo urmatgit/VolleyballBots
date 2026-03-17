@@ -1,0 +1,27 @@
+# Docker
+[Dd]ockerfile
+docker-compose.yml
+docker-compose.override.yml
+*.dockerfile
+.docker/
+
+# Container volumes
+volleyball-data/
+
+# Build artifacts
+publish/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Config with secrets (use environment variables instead)
+appsettings.Production.local.json
