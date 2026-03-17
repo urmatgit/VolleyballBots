@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /VolleyballBot
 
 # Copy csproj and restore dependencies
-COPY VolleyballBot.csproj ./
+COPY *.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
@@ -24,9 +24,6 @@ COPY --from=build /app/publish .
 
 # Create volume for database and config
 VOLUME ["/app/data"]
-
-# Copy default config if not exists
-COPY --from=build /app/publish/appsettings.json ./appsettings.json
 
 ENV DOTNET_ENVIRONMENT=Production
 
