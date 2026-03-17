@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 
@@ -12,18 +11,19 @@ public class HealthCheck
         // Health check endpoint для Render
         app.MapGet("/health", async context =>
         {
-            context.Response.StatusCode = 200;
+            context.Response.ContentType = "text/plain; charset=utf-8";
             await context.Response.WriteAsync("OK");
         });
 
         // Root endpoint
         app.MapGet("/", async context =>
         {
-            context.Response.StatusCode = 200;
+            context.Response.ContentType = "text/html; charset=utf-8";
             await context.Response.WriteAsync(@"
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset=""utf-8"" />
     <title>Volleyball Bot</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
