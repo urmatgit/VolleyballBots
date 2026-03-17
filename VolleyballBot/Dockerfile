@@ -1,13 +1,13 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
+WORKDIR /VolleyballBot
 
 # Copy csproj and restore dependencies
-COPY VolleyballBot/VolleyballBot.csproj ./
+COPY VolleyballBot.csproj ./
 RUN dotnet restore
 
 # Copy everything else and build
-COPY VolleyballBot/ ./
+COPY ./ ./
 RUN dotnet publish -c Release -o /app/publish
 
 # Runtime stage
