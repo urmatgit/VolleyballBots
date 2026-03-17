@@ -114,6 +114,7 @@ public class TelegramBotHostedService : BackgroundService
         // Получаем сервисы
         var menuHandler = serviceProvider.GetRequiredService<MenuHandler>();
         var createGameHandler = serviceProvider.GetRequiredService<CreateGameHandler>();
+        var adminGamesHandler = serviceProvider.GetRequiredService<AdminGamesHandler>();
         var userStateService = serviceProvider.GetRequiredService<IUserStateService>();
 
         // Проверяем состояние пользователя (пошаговое создание игры)
@@ -161,7 +162,7 @@ public class TelegramBotHostedService : BackgroundService
 
             case "📊 мои игры":
             case "мои игры":
-                await HandleAdminMyGamesAsync(serviceProvider, update);
+                await adminGamesHandler.HandleMyGamesAsync(_botClient, update);
                 break;
 
             default:
@@ -169,13 +170,6 @@ public class TelegramBotHostedService : BackgroundService
                 await menuHandler.HandleHelpAsync(_botClient, update);
                 break;
         }
-    }
-
-    private async Task HandleAdminMyGamesAsync(IServiceProvider serviceProvider, Update update)
-    {
-        // TODO: Реализовать просмотр своих игр для админа
-        var notificationService = serviceProvider.GetRequiredService<INotificationService>();
-        await notificationService.SendMessageAsync(update.Message.From.Id, "🚧 Функция в разработке");
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

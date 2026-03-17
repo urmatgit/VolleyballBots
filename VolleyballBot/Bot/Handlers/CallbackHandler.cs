@@ -14,19 +14,22 @@ public class CallbackHandler
     private readonly IUserRepository _userRepository;
     private readonly GamesHandler _gamesHandler;
     private readonly IKeyboardService _keyboardService;
+    private readonly AdminGamesHandler _adminGamesHandler;
 
     public CallbackHandler(
         IGameService gameService,
         INotificationService notificationService,
         IUserRepository userRepository,
         GamesHandler gamesHandler,
-        IKeyboardService keyboardService)
+        IKeyboardService keyboardService,
+        AdminGamesHandler adminGamesHandler)
     {
         _gameService = gameService;
         _notificationService = notificationService;
         _userRepository = userRepository;
         _gamesHandler = gamesHandler;
         _keyboardService = keyboardService;
+        _adminGamesHandler = adminGamesHandler;
     }
 
     public async Task HandleAsync(ITelegramBotClient botClient, Update update)
@@ -36,6 +39,14 @@ public class CallbackHandler
         var data = update.CallbackQuery.Data;
         var telegramId = update.CallbackQuery.From.Id;
 
+        // Обработка callback админа
+        if (data.StartsWith("admin_"))
+        {
+            await _adminGamesHandler.HandleCallbackAsync(botClient, update, data);
+            return;
+        }
+
+        // Обработка callback игрока
         if (data.StartsWith("view_game_"))
         {
             var gameId = long.Parse(data.Substring("view_game_".Length));
@@ -53,12 +64,10 @@ public class CallbackHandler
         }
         else if (data == "games_list")
         {
-            // Возврат к списку игр - закрываем текущее сообщение
             await botClient.DeleteMessage(telegramId, update.CallbackQuery.Message.MessageId);
         }
         else if (data == "main_menu")
         {
-            // Возврат в главное меню
             await botClient.DeleteMessage(telegramId, update.CallbackQuery.Message.MessageId);
         }
 
@@ -87,7 +96,6 @@ public class CallbackHandler
             {
                 await _notificationService.NotifyPlayerJoinedAsync(selectedGame, user, status);
             }
-            // Обновляем сообщение со списком игроков
             await _gamesHandler.HandleViewGameAsync(botClient, telegramId, gameId);
         }
 
@@ -116,7 +124,6 @@ public class CallbackHandler
             {
                 await _notificationService.NotifyPlayerLeftAsync(selectedGame, user);
             }
-            // Обновляем сообщение со списком игроков
             await _gamesHandler.HandleViewGameAsync(botClient, telegramId, gameId);
         }
 

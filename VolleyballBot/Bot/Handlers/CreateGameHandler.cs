@@ -142,7 +142,7 @@ public class CreateGameHandler
         _userStateService.SetState(telegramId, UserState.CreatingGame_Address);
 
         await botClient.SendMessage(telegramId, $"""
-            ✅ Время: {time:hh\\:mm}
+            ✅ Время: {time.Hours:D2}:{time.Minutes:D2}
             
             *Шаг 3/5: Адрес*
             

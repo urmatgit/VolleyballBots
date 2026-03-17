@@ -45,6 +45,7 @@ public class Program
                 services.AddScoped<CreateGameHandler>();
                 services.AddScoped<GamesHandler>();
                 services.AddScoped<CallbackHandler>();
+                services.AddScoped<AdminGamesHandler>();
 
                 // Telegram Bot
                 var botToken = context.Configuration["BotToken"];
