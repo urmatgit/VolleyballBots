@@ -19,7 +19,7 @@ services:
       - key: AdminTelegramIds
         sync: false
       - key: ConnectionStrings__DefaultConnection
-        value: Data Source=/data/volleyball.db
+        value: Data Source=/opt/render/project/src/data/volleyball.db
       - key: TZ
         value: Europe/Moscow
     

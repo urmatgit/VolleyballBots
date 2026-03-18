@@ -1,6 +1,6 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
+WORKDIR /VolleyballBot
 
 # Copy csproj and restore dependencies
 COPY *.csproj ./
@@ -12,6 +12,7 @@ RUN dotnet publish -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -31,7 +32,7 @@ COPY --from=build /app/publish .
 RUN mkdir -p /data
 
 # Volume for database
-VOLUME ["/data"]
+VOLUME ["/app/data"]
 
 # Expose port for health check
 EXPOSE 8080
