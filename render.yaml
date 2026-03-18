@@ -1,14 +1,14 @@
 services:
-  # Telegram Bot Service
+  # Telegram Bot - Background Worker
   - type: web
     name: volleyball-bot
-    env: dotnet
+    env: docker
     region: frankfurt
     plan: starter
     branch: main
     rootDir: VolleyballBot
-    buildCommand: dotnet publish -c Release -o /opt/render/project/src
-    startCommand: dotnet VolleyballBot.dll
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./
     
     # Environment variables
     envVars:
@@ -19,22 +19,25 @@ services:
       - key: AdminTelegramIds
         sync: false
       - key: ConnectionStrings__DefaultConnection
-        value: Data Source=/opt/render/project/src/data/volleyball.db
-      - key: Proxy__Url
-        sync: false
-      - key: Proxy__Username
-        sync: false
-      - key: Proxy__Password
-        sync: false
+        value: Data Source=/data/volleyball.db
+      - key: TZ
+        value: Europe/Moscow
     
     # Persistent disk for database
     disks:
       - name: volleyball-data
-        mountPath: /opt/render/project/src/data
+        mountPath: /data
         sizeGB: 1
     
     # Health check
     healthCheckPath: /health
+    healthCheckInterval: 30s
+    healthCheckTimeout: 5s
+    healthCheckRetries: 3
     
-    # Auto-deploy
+    # Auto-deploy и restart
     autoDeploy: true
+    restartPolicy: always
+    
+    # Resources
+    numInstances: 1

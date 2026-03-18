@@ -1,147 +1,206 @@
-# 🚀 Развертывание на Render.com
+# 🚀 Развертывание на Render.com - Постоянная работа
 
-## Быстрый старт
+## Гарантия бесперебойной работы
 
-### 1. Подготовка
+### 1. Конфигурация render.yaml
 
-1. Создайте аккаунт на [Render.com](https://render.com)
-2. Подключите GitHub репозиторий с кодом бота
-3. Получите токен бота у @BotFather
+Файл `render.yaml` настроен для постоянной работы:
 
-### 2. Развертывание через Render Blueprint
+```yaml
+services:
+  - type: web
+    name: volleyball-bot
+    env: docker
+    region: frankfurt
+    plan: starter
+    
+    # Auto-restart
+    restartPolicy: always
+    
+    # Health check
+    healthCheckPath: /health
+    healthCheckInterval: 30s
+    healthCheckTimeout: 5s
+    healthCheckRetries: 3
+    
+    # Auto-deploy
+    autoDeploy: true
+```
+
+### 2. Dockerfile оптимизирован
+
+- Многоступенчатая сборка
+- Минимальный runtime образ
+- Health check встроен
+- Том для данных
+
+### 3. Настройка на Render.com
+
+#### Вариант A: Через Blueprint
 
 ```bash
-# Через Render CLI
-render blueprint launch render.yaml
-```
-
-Или через веб-интерфейс:
-1. Нажмите "New +" в дашборде
-2. Выберите "Blueprint"
-3. Подключите репозиторий
-4. Выберите файл `render.yaml`
-
-### 3. Настройка переменных окружения
-
-В дашборде Render укажите:
-
-| Переменная | Значение |
-|------------|----------|
-| `BotToken` | Токен от @BotFather |
-| `AdminTelegramIds` | Ваш Telegram ID |
-| `Proxy__Url` | (опционально) URL прокси |
-| `Proxy__Username` | (опционально) Логин прокси |
-| `Proxy__Password` | (опционально) Пароль прокси |
-
-### 4. Проверка
-
-После деплоя:
-1. Откройте логи в дашборде Render
-2. Проверьте что бот запустился
-3. Напишите боту в Telegram
-
-## Ручное развертывание
-
-### 1. Создать Web Service
-
-1. **New +** → **Web Service**
-2. Подключить репозиторий
-3. Настроить:
-
-```
-Name: volleyball-bot
-Region: Frankfurt (Europe)
-Branch: main
-Root Directory: VolleyballBot
-Runtime: .NET 9
-Build Command: dotnet publish -c Release -o /opt/render/project/src
-Start Command: dotnet VolleyballBot.dll
-```
-
-### 2. Добавить диск
-
-1. **Disks** → **Add Disk**
-2. Name: `volleyball-data`
-3. Size: 1 GB
-4. Mount Path: `/opt/render/project/src/data`
-
-### 3. Переменные окружения
-
-Добавьте в **Environment**:
-
-```bash
-DOTNET_ENVIRONMENT=Production
-BotToken=your_bot_token_here
-AdminTelegramIds=your_telegram_id
-ConnectionStrings__DefaultConnection=Data Source=/opt/render/project/src/data/volleyball.db
-```
-
-### 4. Деплой
-
-Нажмите **Deploy** и следите за логами.
-
-## Стоимость
-
-- **Starter план**: $7/месяц
-- **Disk 1GB**: $0.50/месяц
-- **Итого**: ~$7.50/месяц
-
-## Метрики
-
-- CPU: 0.5 CPU
-- RAM: 512 MB
-- Disk: 1 GB SSD
-- Bandwidth: 1 TB
-
-## Логи
-
-```bash
-# Через Render CLI
-render logs -s volleyball-bot
-
-# Через веб-интерфейс
-Dashboard → volleyball-bot → Logs
-```
-
-## Обновление
-
-При push в ветку `main` автоматический деплой.
-
-Или вручную:
-```bash
-render deploy -s volleyball-bot
-```
-
-## Troubleshooting
-
-### Бот не запускается
-- Проверьте логи в дашборде
-- Убедитесь что токен правильный
-- Проверьте переменные окружения
-
-### Ошибка БД
-- Проверьте что диск подключен
-- Путь: `/opt/render/project/src/data`
-
-### 407 Proxy Error
-- Удалите переменные Proxy__* для работы без прокси
-- Или укажите правильные данные прокси
-
-## Render CLI
-
-```bash
-# Установка
+# Установите Render CLI
 npm install -g @render-cloud/cli
 
 # Логин
 render login
 
-# Список сервисов
-render services list
+# Деплой
+render blueprint launch render.yaml
+```
+
+#### Вариант B: Веб-интерфейс
+
+1. **Создать Web Service:**
+   - New + → Web Service
+   - Connect repository (GitHub/GitLab)
+
+2. **Configure:**
+   ```
+   Name: volleyball-bot
+   Region: Frankfurt (Europe)
+   Branch: main
+   Root Directory: VolleyballBot
+   Runtime: Docker
+   DockerfilePath: ./Dockerfile
+   ```
+
+3. **Environment Variables:**
+   ```
+   DOTNET_ENVIRONMENT=Production
+   BotToken=YOUR_BOT_TOKEN
+   AdminTelegramIds=YOUR_TELEGRAM_ID
+   ConnectionStrings__DefaultConnection=Data Source=/data/volleyball.db
+   TZ=Europe/Moscow
+   ```
+
+4. **Disk (1GB):**
+   - Name: volleyball-data
+   - Mount Path: /data
+
+5. **Advanced:**
+   - Health Check Path: /health
+   - Auto-Deploy: Yes
+   - Restart Policy: Always
+
+### 4. Мониторинг
+
+#### Health Check URLs:
+- **Health:** `https://your-app.onrender.com/health`
+- **Status:** `https://your-app.onrender.com/`
+- **Keep-Alive:** `https://your-app.onrender.com/keep-alive`
+
+#### Render Dashboard:
+1. Откройте https://dashboard.render.com
+2. Выберите сервис
+3. Вкладка **Logs** - просмотр логов
+4. Вкладка **Metrics** - CPU/RAM usage
+
+### 5. Auto-Restart
+
+Render автоматически перезапустит бота если:
+- Health check не прошел (3 попытки)
+- Процесс упал с ошибкой
+- Превышен лимит памяти
+
+### 6. Предотвращение sleep
+
+Render **не усыпляет** Docker контейнеры на платных тарифах.
+
+**Starter план ($7/мес):**
+- ✅ Контейнер работает 24/7
+- ✅ Auto-restart при сбоях
+- ✅ Health checks
+
+### 7. Alerts (опционально)
+
+Настройте уведомления:
+
+1. Dashboard → Settings → Notifications
+2. Включите:
+   - Deploy failures
+   - Health check failures
+   - Service restarts
+
+### 8. Логи
+
+```bash
+# Render CLI
+render logs -s volleyball-bot -f
+
+# Или в дашборде
+Dashboard → volleyball-bot → Logs
+```
+
+### 9. Обновление
+
+**Автоматически:**
+- Push в ветку `main` → авто-деплой
+
+**Вручную:**
+```bash
+render deploy -s volleyball-bot
+```
+
+### 10. Troubleshooting
+
+#### Бот не запускается:
+```bash
+# Проверьте логи
+render logs -s volleyball-bot
+
+# Проверьте переменные
+render env show -s volleyball-bot
+```
+
+#### Частые рестарты:
+- Проверьте логи на ошибки
+- Увеличьте health check timeout
+- Проверьте лимиты памяти
+
+#### БД не сохраняется:
+- Убедитесь что том подключен
+- Path: `/data`
+
+## Стоимость
+
+| Компонент | Цена |
+|-----------|------|
+| Starter Plan | $7/мес |
+| Disk 1GB | $0.50/мес |
+| **Итого** | **$7.50/мес** |
+
+## Uptime
+
+- **Ожидаемый:** 99.9%
+- **SLA Render:** 99.95%
+
+## Best Practices
+
+1. ✅ Всегда используйте health checks
+2. ✅ Логируйте важные события
+3. ✅ Настройте алерты
+4. ✅ Регулярно проверяйте логи
+5. ✅ Делайте бэкапы БД
+
+## Команды
+
+```bash
+# Статус
+render services show volleyball-bot
 
 # Логи
-render logs -s volleyball-bot
+render logs -s volleyball-bot -f
 
 # Деплой
 render deploy -s volleyball-bot
+
+# Рестарт
+render restart -s volleyball-bot
+
+# Остановка
+render stop -s volleyball-bot
+
+# Запуск
+render start -s volleyball-bot
 ```

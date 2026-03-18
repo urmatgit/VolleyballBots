@@ -1,6 +1,6 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /VolleyballBot
+WORKDIR /src
 
 # Copy csproj and restore dependencies
 COPY *.csproj ./
@@ -12,19 +12,29 @@ RUN dotnet publish -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
-WORKDIR /app
 
-# Install timezone data
-RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    tzdata \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set timezone
 ENV TZ=Europe/Moscow
+ENV DOTNET_ENVIRONMENT=Production
+
+WORKDIR /app
 
 COPY --from=build /app/publish .
 
-# Create volume for database and config
-VOLUME ["/app/data"]
+# Create data directory
+RUN mkdir -p /data
 
-ENV DOTNET_ENVIRONMENT=Production
+# Volume for database
+VOLUME ["/data"]
 
+# Expose port for health check
+EXPOSE 8080
+
+# Set entrypoint
 ENTRYPOINT ["dotnet", "VolleyballBot.dll"]
